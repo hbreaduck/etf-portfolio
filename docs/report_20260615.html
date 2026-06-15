@@ -73,12 +73,26 @@ tr:hover td{filter:brightness(.97);}
 .held-row{font-size:11px;color:#888;margin-top:12px;}
 .pos{color:var(--green);font-weight:700;} .neg{color:var(--red);font-weight:700;}
 footer{text-align:center;color:#bbb;font-size:11px;padding:22px;}
+/* ── history ── */
+.hist-first{color:var(--blue);font-style:italic;}
+/* ── radar ── */
+.star{display:inline-block;color:#E6AC00;font-size:14px;margin-left:3px;}
+.badge-port{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;
+             font-weight:700;background:#D5F5E3;color:#1E8449;}
+.badge-noport{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;
+               font-weight:700;background:#FDEBD0;color:#C0392B;}
+.noport-row td{background:#FEF9F0 !important;}
+.etf-tag{display:inline-block;padding:1px 5px;border-radius:4px;font-size:10px;
+           font-weight:600;margin:1px;background:#EBF5FB;color:#1A5276;}
+.delta-up{color:var(--green);font-weight:700;}
+.delta-dn{color:var(--red);font-weight:700;}
+.radar-sub{font-size:12px;color:#888;font-weight:400;margin-left:6px;}
 </style>
 </head>
 <body>
 <div class="topbar">
   <h1>&#128202; ETF 타깃 포트폴리오 리포트</h1>
-  <div class="meta">기준일: 2026-06-15<br>생성: 2026-06-15 15:35</div>
+  <div class="meta">기준일: 2026-06-15<br>생성: 2026-06-15 16:35</div>
 </div>
 <div class="container">
 <div class="warn-box">
@@ -257,37 +271,27 @@ footer{text-align:center;color:#bbb;font-size:11px;padding:22px;}
   </table>
 </div>
 <div class="card">
-  <h2>전일 대비 변동 <span style="font-size:12px;font-weight:400;color:#888;">vs 2026-06-14</span></h2>
-  <span class="badge in">IN 1</span><span class="badge out">OUT 1</span>
-  <div class="tover">
-  <div class="tl">예상 턴오버 (편도 기준)</div>
-  <div class="tv">5.12%</div>
+  <h2>포트폴리오 변동 이력</h2>
+  <table>
+    <thead><tr>
+      <th>일자</th><th>신규편입</th><th>편출</th><th>주요 비중변동</th><th class="r">턴오버(%)</th>
+    </tr></thead>
+    <tbody><tr>
+  <td style="white-space:nowrap;font-weight:600;">2026-06-15</td>
+  <td><span class="hist-first">기준일(최초)</span></td>
+  <td></td>
+  <td>&#8212;</td>
+  <td class="r"></td>
+</tr></tbody>
+  </table>
 </div>
-  <h3>매매 리스트</h3>
-<table><thead><tr><th>방향</th><th>티커</th><th>종목명</th><th class="r">증감(%p)</th></tr></thead>
-<tbody><tr>
-  <td><span class="badge in">BUY</span></td>
-  <td><b>NVDA</b></td><td>NVIDIA Corp</td>
-  <td class="r pos">+6.23%p</td>
-</tr><tr>
-  <td><span class="badge out">SELL</span></td>
-  <td><b>FSLR</b></td><td>First Solar</td>
-  <td class="r neg">-4.00%p</td>
-</tr></tbody></table>
-  <h3 style="color:var(--green);">&#9650; 신규 편입 (IN) 1종목</h3>
-<table><thead><tr><th>티커</th><th>종목명</th><th class="r">비중(%)</th></tr></thead>
-<tbody><tr class="other-row">
-  <td><b>NVDA</b></td><td>NVIDIA Corp</td>
-  <td class="r pos">+6.23%</td>
-</tr></tbody></table>
-  <h3 style="color:var(--red);">&#9660; 편출 (OUT) 1종목</h3>
-<table><thead><tr><th>티커</th><th>종목명</th><th class="r">이전 비중(%)</th></tr></thead>
-<tbody><tr style="background:#FADBD8;">
-  <td><b>FSLR</b></td><td>First Solar</td>
-  <td class="r neg">&#8722;4.00%</td>
-</tr></tbody></table>
-  
-  <div class="held-row">유지 종목 (15개, 변화 &lt;0.5%p): AMD &#183; AMZN &#183; ARM &#183; BE &#183; CASH &#183; COIN &#183; CRCL &#183; GOOGL &#183; INTC &#183; META &#183; MU &#183; SNDK &#183; STX &#183; TSLA &#183; WDC</div>
+<div class="card">
+  <h2>전일 대비 변동</h2>
+  <div class="diff-first">&#9989; 기준일(최초) &#8212; 오늘 포트폴리오를 기준 스냅샷으로 저장했습니다.<br>내일 실행부터 diff가 표시됩니다.</div>
+</div>
+<div class="card">
+  <h2>ETF 인사이트 레이더</h2>
+  <div style="color:#888;font-size:12px;padding:8px 0;">데이터 부족 &#8212; 비교할 이전 스냅샷 없음</div>
 </div>
 </div>
 <footer>자동 생성 &#8212; ETF Portfolio Pipeline</footer>
