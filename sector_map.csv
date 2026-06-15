@@ -1,0 +1,83 @@
+ticker,name,gics_sector,tech_economic
+285A,Kioxia Holdings Corp,Information Technology,Y
+INTC,Intel Corp,Information Technology,Y
+AMD,Advanced Micro Devices Inc,Information Technology,Y
+STX,Seagate Technology Holdings PLC,Information Technology,Y
+WDC,Western Digital Corp,Information Technology,Y
+SNOW,Snowflake Inc,Information Technology,Y
+NQM6,NASDAQ 100 E-MINI INDEX (Futures),미분류,N
+ARM,ARM Holdings PLC,Information Technology,Y
+SNDK,Sandisk Corp,Information Technology,Y
+NVDA,NVIDIA Corp,Information Technology,Y
+QCOM,QUALCOMM Inc,Information Technology,Y
+ASML,ASML Holding NV,Information Technology,Y
+NTAP,NetApp Inc,Information Technology,Y
+IBM,International Business Machines Corp,Information Technology,Y
+AMZN,Amazon.com Inc,Consumer Discretionary,Y
+NOW,ServiceNow Inc,Information Technology,Y
+TSM,Taiwan Semiconductor Manufacturing Co Ltd,Information Technology,Y
+0043Y0,TIME 차이나AI테크액티브 (ETF),미분류,N
+ROP,Roper Technologies Inc,Industrials,N
+9988,Alibaba Group Holding Ltd,Consumer Discretionary,Y
+MELI,MercadoLibre Inc,Consumer Discretionary,Y
+GOOG,Alphabet Inc (Class C),Communication Services,Y
+CRM,Salesforce Inc,Information Technology,Y
+ACN,Accenture PLC,Information Technology,Y
+META,Meta Platforms Inc,Communication Services,Y
+2513,Knowledge Atlas Technology JSC Ltd,Information Technology,Y
+PDD,PDD Holdings Inc,Consumer Discretionary,Y
+MSTR,Strategy Inc,Information Technology,Y
+DELL,Dell Technologies Inc,Information Technology,Y
+6981,Murata Manufacturing Co Ltd,Information Technology,Y
+EBAY,eBay Inc,Consumer Discretionary,N
+SAP,SAP SE,Information Technology,Y
+COIN,Coinbase Global Inc,Financials,Y
+CRCL,Circle Internet Group Inc,Financials,Y
+700,Tencent Holdings Ltd,Communication Services,Y
+SPCX,Space Exploration Technologies Corp,Industrials,Y
+MU,Micron Technology Inc,Information Technology,Y
+MRVL,Marvell Technology Inc,Information Technology,Y
+CRDO,Credo Technology Group Holding Ltd,Information Technology,Y
+LRCX,Lam Research Corp,Information Technology,Y
+GOOGL,Alphabet Inc (Class A),Communication Services,Y
+AMAT,Applied Materials Inc,Information Technology,Y
+AAPL,Apple Inc,Information Technology,Y
+AVGO,Broadcom Inc,Information Technology,Y
+MSFT,Microsoft Corp,Information Technology,Y
+AAOI,Applied Optoelectronics Inc,Information Technology,Y
+NBIS,Nebius Group NV,Information Technology,Y
+HOOD,Robinhood Markets Inc,Financials,Y
+GLW,Corning Inc,Information Technology,Y
+SIMO,Silicon Motion Technology Corp,Information Technology,Y
+GEV,GE Vernova Inc,Industrials,N
+APP,AppLovin Corp,Communication Services,Y
+RKLB,Rocket Lab Corp,Industrials,Y
+VRT,Vertiv Holdings Co,Information Technology,Y
+BE,Bloom Energy Corp,Industrials,Y
+LITE,Lumentum Holdings Inc,Information Technology,Y
+TSLA,Tesla Inc,Consumer Discretionary,Y
+ALAB,Astera Labs Inc,Information Technology,Y
+CRWV,CoreWeave Inc,Information Technology,Y
+TER,Teradyne Inc,Information Technology,Y
+ORCL,Oracle Corp,Information Technology,Y
+CSCO,Cisco Systems Inc,Information Technology,Y
+STM,STMicroelectronics NV,Information Technology,Y
+PLTR,Palantir Technologies Inc,Information Technology,Y
+TXN,Texas Instruments Inc,Information Technology,Y
+DDOG,Datadog Inc,Information Technology,Y
+KLAC,KLA Corp,Information Technology,Y
+PANW,Palo Alto Networks Inc,Information Technology,Y
+ADI,Analog Devices Inc,Information Technology,Y
+TSEM,Tower Semiconductor Ltd,Information Technology,Y
+CRWD,CrowdStrike Holdings Inc,Information Technology,Y
+CIEN,Ciena Corp,Information Technology,Y
+GILD,Gilead Sciences Inc,Health Care,N
+FTNT,Fortinet Inc,Information Technology,Y
+COHR,Coherent Corp,Information Technology,Y
+MPWR,Monolithic Power Systems Inc,Information Technology,Y
+NXPI,NXP Semiconductors NV,Information Technology,Y
+FLEX,Flextronics International Ltd,Information Technology,Y
+MCHP,Microchip Technology Inc,Information Technology,Y
+SATS,EchoStar Corp,Communication Services,Y
+FSLR,First Solar Inc,미분류,Y
+CASH,현금/설정현금액,미분류,N
