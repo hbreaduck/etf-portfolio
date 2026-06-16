@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ETF 포트폴리오 리포트 — 2026-06-16</title>
+<style>
+:root{
+  --blue:#1F3864;--tech:#2E75B6;--other:#2E8B57;--cash:#B8860B;
+  --warn:#C00000;--bg:#F2F5F9;--card:#FFF;--border:#DEE2E6;
+  --t-tech:#D6E4F7;--t-other:#E2EFDA;--t-cash:#FFF2CC;
+  --green:#196F3D;--red:#C0392B;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:13px;
+      background:var(--bg);color:#222;line-height:1.5;}
+.topbar{background:var(--blue);color:#fff;padding:16px 32px;
+         display:flex;justify-content:space-between;align-items:center;}
+.topbar h1{font-size:19px;font-weight:700;letter-spacing:-0.5px;}
+.topbar .meta{font-size:11px;opacity:.75;text-align:right;line-height:1.7;}
+.container{max-width:1100px;margin:22px auto;padding:0 18px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;
+       padding:20px;margin-bottom:18px;}
+.card h2{font-size:14px;font-weight:700;color:var(--blue);margin-bottom:14px;
+          border-bottom:2px solid var(--blue);padding-bottom:6px;}
+.card h3{font-size:13px;color:#444;margin:16px 0 8px;}
+/* ── bucket cards ── */
+.bucket-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px;}
+.bcard{background:var(--card);border:1px solid var(--border);border-radius:8px;
+        padding:18px 16px;text-align:center;}
+.bcard.tech{border-top:4px solid var(--tech);}
+.bcard.other{border-top:4px solid var(--other);}
+.bcard.cash{border-top:4px solid var(--cash);}
+.bcard .lbl{font-size:12px;color:#666;margin-bottom:4px;}
+.bcard .big{font-size:30px;font-weight:700;}
+.bcard.tech .big{color:var(--tech);}
+.bcard.other .big{color:var(--other);}
+.bcard.cash .big{color:var(--cash);}
+.bcard .sub{font-size:11px;color:#888;margin-top:4px;}
+.bcard .ddiff{font-size:11px;margin-top:3px;}
+/* ── GICS vs econ ── */
+.exp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.ebox{border-radius:6px;padding:16px;text-align:center;}
+.ebox .big{font-size:26px;font-weight:700;}
+.ebox .lbl{font-size:11px;color:#555;margin-top:6px;line-height:1.5;}
+/* ── table ── */
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{background:var(--blue);color:#fff;padding:7px 10px;text-align:left;white-space:nowrap;}
+th.r,td.r{text-align:right;}
+th.c,td.c{text-align:center;}
+td{padding:5px 10px;border-bottom:1px solid #EBEBEB;}
+tr:hover td{filter:brightness(.97);}
+.tech-row td{background:var(--t-tech);}
+.other-row td{background:var(--t-other);}
+.cash-row td{background:var(--t-cash);}
+/* ── warning ── */
+.warn-box{background:#FFF4F4;border:1px solid #F5C6C6;border-radius:6px;
+           padding:13px 16px;margin-bottom:16px;}
+.warn-box .wt{color:var(--warn);font-weight:700;font-size:13px;margin-bottom:5px;}
+.warn-box .wt2{font-size:11px;color:#666;font-family:monospace;}
+/* ── diff ── */
+.diff-first{background:#EBF5EB;border:1px solid #A9DFBF;border-radius:6px;
+             padding:14px 18px;color:var(--green);font-weight:600;font-size:13px;}
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;
+        font-size:11px;font-weight:700;margin-right:4px;}
+.badge.in{background:#D5F5E3;color:#1E8449;}
+.badge.out{background:#FADBD8;color:#C0392B;}
+.badge.chg{background:#D6EAF8;color:#1A5276;}
+.tover{background:#F8F9FA;border:1px solid var(--border);border-radius:6px;
+        padding:12px 20px;display:inline-block;margin:14px 0;}
+.tover .tl{font-size:11px;color:#888;}
+.tover .tv{font-size:26px;font-weight:700;color:var(--blue);}
+.held-row{font-size:11px;color:#888;margin-top:12px;}
+.pos{color:var(--green);font-weight:700;} .neg{color:var(--red);font-weight:700;}
+footer{text-align:center;color:#bbb;font-size:11px;padding:22px;}
+/* ── history ── */
+.hist-first{color:var(--blue);font-style:italic;}
+/* ── radar ── */
+.star{display:inline-block;color:#E6AC00;font-size:14px;margin-left:3px;}
+.badge-port{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;
+             font-weight:700;background:#D5F5E3;color:#1E8449;}
+.badge-noport{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;
+               font-weight:700;background:#FDEBD0;color:#C0392B;}
+.noport-row td{background:#FEF9F0 !important;}
+.etf-tag{display:inline-block;padding:1px 5px;border-radius:4px;font-size:10px;
+           font-weight:600;margin:1px;background:#EBF5FB;color:#1A5276;}
+.delta-up{color:var(--green);font-weight:700;}
+.delta-dn{color:var(--red);font-weight:700;}
+.radar-sub{font-size:12px;color:#888;font-weight:400;margin-left:6px;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>&#128202; ETF 타깃 포트폴리오 리포트</h1>
+  <div class="meta">기준일: 2026-06-16<br>생성: 2026-06-16 09:58</div>
+</div>
+<div class="container">
+<div class="bucket-grid"><div class="bcard tech">
+  <div class="lbl">테크</div>
+  <div class="big">50.00%</div>
+  <div class="sub">목표 50%</div>
+  <div class="ddiff diff-zero">목표 일치</div>
+</div><div class="bcard other">
+  <div class="lbl">기타</div>
+  <div class="big">45.00%</div>
+  <div class="sub">목표 45%</div>
+  <div class="ddiff diff-zero">목표 일치</div>
+</div><div class="bcard cash">
+  <div class="lbl">현금</div>
+  <div class="big">5.00%</div>
+  <div class="sub">목표 5%</div>
+  <div class="ddiff diff-zero">목표 일치</div>
+</div></div>
+<div class="card">
+  <h2>기술 익스포저 비교 — GICS 라벨 vs 실질(tech_economic=Y)</h2>
+  <div class="exp-grid">
+    <div class="ebox" style="background:var(--t-tech);">
+      <div class="big" style="color:var(--tech);">50.00%</div>
+      <div class="lbl">GICS IT 기준<br>Information Technology 섹터만 집계</div>
+    </div>
+    <div class="ebox" style="background:#EBF5EB;">
+      <div class="big" style="color:var(--other);">95.00%</div>
+      <div class="lbl">실질 기술 익스포저<br>tech_economic = Y 종목 합산</div>
+    </div>
+    <div class="ebox" style="background:#F8F9FA;border:1px solid var(--border);">
+      <div class="big" style="color:var(--green);">+45.00%p</div>
+      <div class="lbl">실질 기술 익스포저가 GICS 대비 높음<br>(통신·소비재 내 기술기업 포함)</div>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <h2>타깃 포트폴리오 (15종목 + 현금)</h2>
+  <table>
+    <thead><tr>
+      <th>버킷</th><th>티커</th><th>종목명</th><th>GICS 섹터</th>
+      <th class="c">실질기술</th><th class="r">스코어</th><th class="r">비중(%)</th>
+    </tr></thead>
+    <tbody><tr class="cash-row">
+  <td>현금</td>
+  <td><b>CASH</b></td>
+  <td>현금</td>
+  <td>&#8212;</td>
+  <td class="c">&#8212;</td>
+  <td class="r">&#8212;</td>
+  <td class="r"><b>5.00%</b></td>
+</tr><tr class="other-row">
+  <td>기타</td>
+  <td><b>SPCX</b></td>
+  <td>Space Exploration Technologies Corp</td>
+  <td>Industrials</td>
+  <td class="c">Y</td>
+  <td class="r">13.47</td>
+  <td class="r"><b>10.00%</b></td>
+</tr><tr class="other-row">
+  <td>기타</td>
+  <td><b>AMZN</b></td>
+  <td>Amazon.com Inc</td>
+  <td>Consumer Discretionary</td>
+  <td class="c">Y</td>
+  <td class="r">8.16</td>
+  <td class="r"><b>9.08%</b></td>
+</tr><tr class="other-row">
+  <td>기타</td>
+  <td><b>GOOGL</b></td>
+  <td>Alphabet Inc</td>
+  <td>Communication Services</td>
+  <td class="c">Y</td>
+  <td class="r">7.72</td>
+  <td class="r"><b>8.59%</b></td>
+</tr><tr class="other-row">
+  <td>기타</td>
+  <td><b>BE</b></td>
+  <td>Bloom Energy Corp</td>
+  <td>Industrials</td>
+  <td class="c">Y</td>
+  <td class="r">5.25</td>
+  <td class="r"><b>5.84%</b></td>
+</tr><tr class="other-row">
+  <td>기타</td>
+  <td><b>COIN</b></td>
+  <td>Coinbase Global Inc</td>
+  <td>Financials</td>
+  <td class="c">Y</td>
+  <td class="r">3.82</td>
+  <td class="r"><b>4.25%</b></td>
+</tr><tr class="other-row">
+  <td>기타</td>
+  <td><b>TSLA</b></td>
+  <td>Tesla Inc</td>
+  <td>Consumer Discretionary</td>
+  <td class="c">Y</td>
+  <td class="r">3.29</td>
+  <td class="r"><b>3.66%</b></td>
+</tr><tr class="other-row">
+  <td>기타</td>
+  <td><b>CRCL</b></td>
+  <td>Circle Internet Group Inc</td>
+  <td>Financials</td>
+  <td class="c">Y</td>
+  <td class="r">3.23</td>
+  <td class="r"><b>3.59%</b></td>
+</tr><tr class="tech-row">
+  <td>테크</td>
+  <td><b>INTC</b></td>
+  <td>Intel Corp</td>
+  <td>Information Technology</td>
+  <td class="c">Y</td>
+  <td class="r">19.02</td>
+  <td class="r"><b>8.33%</b></td>
+</tr><tr class="tech-row">
+  <td>테크</td>
+  <td><b>AMD</b></td>
+  <td>Advanced Micro Devices Inc</td>
+  <td>Information Technology</td>
+  <td class="c">Y</td>
+  <td class="r">17.62</td>
+  <td class="r"><b>7.72%</b></td>
+</tr><tr class="tech-row">
+  <td>테크</td>
+  <td><b>SNDK</b></td>
+  <td>Sandisk Corp</td>
+  <td>Information Technology</td>
+  <td class="c">Y</td>
+  <td class="r">16.59</td>
+  <td class="r"><b>7.27%</b></td>
+</tr><tr class="tech-row">
+  <td>테크</td>
+  <td><b>ARM</b></td>
+  <td>ARM Holdings PLC</td>
+  <td>Information Technology</td>
+  <td class="c">Y</td>
+  <td class="r">16.49</td>
+  <td class="r"><b>7.22%</b></td>
+</tr><tr class="tech-row">
+  <td>테크</td>
+  <td><b>NVDA</b></td>
+  <td>NVIDIA Corp</td>
+  <td>Information Technology</td>
+  <td class="c">Y</td>
+  <td class="r">13.26</td>
+  <td class="r"><b>5.81%</b></td>
+</tr><tr class="tech-row">
+  <td>테크</td>
+  <td><b>STX</b></td>
+  <td>Seagate Technology Holdings PLC</td>
+  <td>Information Technology</td>
+  <td class="c">Y</td>
+  <td class="r">11.00</td>
+  <td class="r"><b>4.82%</b></td>
+</tr><tr class="tech-row">
+  <td>테크</td>
+  <td><b>MU</b></td>
+  <td>Micron Technology Inc</td>
+  <td>Information Technology</td>
+  <td class="c">Y</td>
+  <td class="r">10.47</td>
+  <td class="r"><b>4.59%</b></td>
+</tr><tr class="tech-row">
+  <td>테크</td>
+  <td><b>WDC</b></td>
+  <td>Western Digital Corp</td>
+  <td>Information Technology</td>
+  <td class="c">Y</td>
+  <td class="r">9.67</td>
+  <td class="r"><b>4.24%</b></td>
+</tr></tbody>
+  </table>
+</div>
+<div class="card">
+  <h2>포트폴리오 변동 이력</h2>
+  <table>
+    <thead><tr>
+      <th>일자</th><th>신규편입</th><th>편출</th><th>주요 비중변동</th><th class="r">턴오버(%)</th>
+    </tr></thead>
+    <tbody><tr>
+  <td style="white-space:nowrap;font-weight:600;">2026-06-16</td>
+  <td><span style="color:var(--green);">SPCX</span></td>
+  <td><span style="color:var(--red);">META</span></td>
+  <td>GOOGL -1.4%p, BE -1.2%p, CRCL -1.1%p, AMZN -0.9%p</td>
+  <td class="r"><b style="color:var(--red);">10.78%</b></td>
+</tr><tr>
+  <td style="white-space:nowrap;font-weight:600;">2026-06-15</td>
+  <td><span class="hist-first">기준일(최초)</span></td>
+  <td></td>
+  <td>&#8212;</td>
+  <td class="r"></td>
+</tr></tbody>
+  </table>
+</div>
+<div class="card">
+  <h2>전일 대비 변동 <span style="font-size:12px;font-weight:400;color:#888;">vs 2026-06-15</span></h2>
+  <span class="badge in">IN 1</span><span class="badge out">OUT 1</span><span class="badge chg">변화 7</span>
+  <div class="tover">
+  <div class="tl">예상 턴오버 (편도 기준)</div>
+  <div class="tv">10.78%</div>
+</div>
+  <h3>매매 리스트</h3>
+<table><thead><tr><th>방향</th><th>티커</th><th>종목명</th><th class="r">증감(%p)</th></tr></thead>
+<tbody><tr>
+  <td><span class="badge in">BUY</span></td>
+  <td><b>SPCX</b></td><td>Space Exploration Technologies Corp</td>
+  <td class="r pos">+10.00%p</td>
+</tr><tr>
+  <td><span class="badge out">SELL</span></td>
+  <td><b>META</b></td><td>Meta Platforms Inc</td>
+  <td class="r neg">-3.56%p</td>
+</tr><tr>
+  <td><span class="badge out">SELL</span></td>
+  <td><b>GOOGL</b></td><td>Alphabet Inc</td>
+  <td class="r neg">-1.41%p</td>
+</tr><tr>
+  <td><span class="badge out">SELL</span></td>
+  <td><b>BE</b></td><td>Bloom Energy Corp</td>
+  <td class="r neg">-1.25%p</td>
+</tr><tr>
+  <td><span class="badge out">SELL</span></td>
+  <td><b>CRCL</b></td><td>Circle Internet Group Inc</td>
+  <td class="r neg">-1.07%p</td>
+</tr><tr>
+  <td><span class="badge out">SELL</span></td>
+  <td><b>AMZN</b></td><td>Amazon.com Inc</td>
+  <td class="r neg">-0.92%p</td>
+</tr><tr>
+  <td><span class="badge out">SELL</span></td>
+  <td><b>COIN</b></td><td>Coinbase Global Inc</td>
+  <td class="r neg">-0.92%p</td>
+</tr><tr>
+  <td><span class="badge out">SELL</span></td>
+  <td><b>TSLA</b></td><td>Tesla Inc</td>
+  <td class="r neg">-0.86%p</td>
+</tr><tr>
+  <td><span class="badge in">BUY</span></td>
+  <td><b>SNDK</b></td><td>Sandisk Corp</td>
+  <td class="r pos">+0.50%p</td>
+</tr></tbody></table>
+  <h3 style="color:var(--green);">&#9650; 신규 편입 (IN) 1종목</h3>
+<table><thead><tr><th>티커</th><th>종목명</th><th class="r">비중(%)</th></tr></thead>
+<tbody><tr class="other-row">
+  <td><b>SPCX</b></td><td>Space Exploration Technologies Corp</td>
+  <td class="r pos">+10.00%</td>
+</tr></tbody></table>
+  <h3 style="color:var(--red);">&#9660; 편출 (OUT) 1종목</h3>
+<table><thead><tr><th>티커</th><th>종목명</th><th class="r">이전 비중(%)</th></tr></thead>
+<tbody><tr style="background:#FADBD8;">
+  <td><b>META</b></td><td>Meta Platforms Inc</td>
+  <td class="r neg">&#8722;3.56%</td>
+</tr></tbody></table>
+  <h3 style="color:var(--blue);">&#8597; 비중 변화 (7종목, &#8805;0.5%p)</h3>
+<table><thead><tr>
+  <th>티커</th><th>종목명</th>
+  <th class="r">전일(%)</th><th class="r">오늘(%)</th><th class="r">변화(%p)</th>
+</tr></thead><tbody><tr>
+  <td><b>GOOGL</b></td><td>Alphabet Inc</td>
+  <td class="r">10.00%</td>
+  <td class="r"><b>8.59%</b></td>
+  <td class="r neg">-1.41%p</td>
+</tr><tr>
+  <td><b>BE</b></td><td>Bloom Energy Corp</td>
+  <td class="r">7.09%</td>
+  <td class="r"><b>5.84%</b></td>
+  <td class="r neg">-1.25%p</td>
+</tr><tr>
+  <td><b>CRCL</b></td><td>Circle Internet Group Inc</td>
+  <td class="r">4.66%</td>
+  <td class="r"><b>3.59%</b></td>
+  <td class="r neg">-1.07%p</td>
+</tr><tr>
+  <td><b>AMZN</b></td><td>Amazon.com Inc</td>
+  <td class="r">10.00%</td>
+  <td class="r"><b>9.08%</b></td>
+  <td class="r neg">-0.92%p</td>
+</tr><tr>
+  <td><b>COIN</b></td><td>Coinbase Global Inc</td>
+  <td class="r">5.16%</td>
+  <td class="r"><b>4.25%</b></td>
+  <td class="r neg">-0.92%p</td>
+</tr><tr>
+  <td><b>TSLA</b></td><td>Tesla Inc</td>
+  <td class="r">4.52%</td>
+  <td class="r"><b>3.66%</b></td>
+  <td class="r neg">-0.86%p</td>
+</tr><tr>
+  <td><b>SNDK</b></td><td>Sandisk Corp</td>
+  <td class="r">6.77%</td>
+  <td class="r"><b>7.27%</b></td>
+  <td class="r pos">+0.50%p</td>
+</tr></tbody></table>
+  <div class="held-row">유지 종목 (8개, 변화 &lt;0.5%p): AMD &#183; ARM &#183; CASH &#183; INTC &#183; MU &#183; NVDA &#183; STX &#183; WDC</div>
+</div>
+<div class="card">
+  <h2>ETF 인사이트 레이더
+    <span class="radar-sub">소스 ETF 3종 전체 구성종목 전일 변동</span>
+  </h2>
+  <h3 style="color:var(--green);">&#9650; 신규 편입 1종목
+  <span class="radar-sub">vs 2026-06-15</span></h3>
+<table><thead><tr><th>티커</th><th>종목명</th><th>ETF</th><th class="c">포트폴리오</th></tr></thead>
+<tbody><tr class="">
+  <td><b>SPCX</b><span class="star" title="2개 이상 ETF에서 동시 증가">&#9733;</span></td>
+  <td>Space Exploration Technologies Corp</td>
+  <td><span class="etf-tag">나스닥성장</span></td>
+  <td class="c"><span class="badge-port">포함</span></td>
+</tr></tbody></table>
+  
+  <h3 style="color:var(--blue);margin-top:16px;">&#8597; 비중 급변 상위
+  <span class="radar-sub">&#916;&#8805;0.5%p, 9종목, vs 2026-06-15</span></h3>
+<table><thead><tr>
+  <th>티커</th><th>종목명</th>
+  <th class="r">AI인공지능&#916;</th><th class="r">나스닥100&#916;</th><th class="r">나스닥성장&#916;</th>
+  <th class="r">합계&#916;</th><th class="c">포트폴리오</th>
+</tr></thead><tbody><tr class="">
+  <td><b>SPCX</b><span class="star" title="2개 이상 ETF에서 동시 증가">&#9733;</span></td>
+  <td>Space Exploration Technologies Corp</td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span class="delta-up">+8.58%p</span></td>
+  <td class="r"><span class="delta-up">+10.29%p</span></td>
+  <td class="c"><span class="badge-port">포함</span></td>
+</tr><tr class="noport-row">
+  <td><b>NTAP</b></td>
+  <td>NetApp Inc</td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span class="delta-dn">-1.12%p</span></td>
+  <td class="r"><span class="delta-dn">-1.21%p</span></td>
+  <td class="c"><span class="badge-noport">미반영</span></td>
+</tr><tr class="">
+  <td><b>SNDK</b></td>
+  <td>Sandisk Corp</td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span class="delta-dn">-0.09%p</span></td>
+  <td class="r"><span class="delta-up">+1.18%p</span></td>
+  <td class="c"><span class="badge-port">포함</span></td>
+</tr><tr class="">
+  <td><b>NVDA</b></td>
+  <td>NVIDIA Corp</td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span class="delta-dn">-0.59%p</span></td>
+  <td class="r"><span class="delta-dn">-0.74%p</span></td>
+  <td class="c"><span class="badge-port">포함</span></td>
+</tr><tr class="">
+  <td><b>GOOGL</b></td>
+  <td>Alphabet Inc</td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span class="delta-dn">-0.55%p</span></td>
+  <td class="r"><span class="delta-dn">-0.63%p</span></td>
+  <td class="c"><span class="badge-port">포함</span></td>
+</tr><tr class="">
+  <td><b>AMZN</b></td>
+  <td>Amazon.com Inc</td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span class="delta-dn">-0.51%p</span></td>
+  <td class="r"><span class="delta-dn">-0.59%p</span></td>
+  <td class="c"><span class="badge-port">포함</span></td>
+</tr><tr class="noport-row">
+  <td><b>SNOW</b></td>
+  <td>Snowflake Inc</td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span class="delta-dn">-0.30%p</span></td>
+  <td class="r"><span class="delta-dn">-0.57%p</span></td>
+  <td class="c"><span class="badge-noport">미반영</span></td>
+</tr><tr class="noport-row">
+  <td><b>MRVL</b></td>
+  <td>Marvell Technology Inc</td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span class="delta-dn">-0.36%p</span></td>
+  <td class="r"><span class="delta-dn">-0.51%p</span></td>
+  <td class="c"><span class="badge-noport">미반영</span></td>
+</tr><tr class="noport-row">
+  <td><b>AAPL</b></td>
+  <td>Apple Inc</td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span style='color:#ccc;'>&#8212;</span></td>
+  <td class="r"><span class="delta-dn">-0.40%p</span></td>
+  <td class="r"><span class="delta-dn">-0.51%p</span></td>
+  <td class="c"><span class="badge-noport">미반영</span></td>
+</tr></tbody></table>
+<div style="font-size:11px;color:#888;margin-top:8px;">
+  &#9733; = 2개 이상 ETF에서 동시 증가 &nbsp;|&nbsp;
+  <span class="badge-noport">미반영</span> = 현재 15종목 포트폴리오 미포함
+</div>
+</div>
+</div>
+<footer>자동 생성 &#8212; ETF Portfolio Pipeline</footer>
+</body></html>
