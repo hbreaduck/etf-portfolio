@@ -67,7 +67,9 @@ def _setup_log(date_str: str, log_dir: str = "logs"):
 
 def _push_pages(report_path: str, date_str: str) -> str | None:
     """
-    HTML 리포트를 docs/에 복사하고 GitHub Pages로 push.
+    HTML 리포트를 docs/에 배포하고 GitHub Pages로 push.
+    - docs/index.html      : 항상 최신 내용 (고정 URL)
+    - docs/archive/YYYY-MM-DD.html : 날짜별 이력 보존
     git 또는 네트워크 오류 시 경고만 출력하고 계속 진행.
     반환: GitHub Pages URL (성공 시) 또는 None
     """
@@ -76,25 +78,14 @@ def _push_pages(report_path: str, date_str: str) -> str | None:
 
     docs = pathlib.Path("docs")
     docs.mkdir(exist_ok=True)
+    archive = docs / "archive"
+    archive.mkdir(exist_ok=True)
 
-    # 오늘 리포트 복사
-    dest = docs / f"report_{date_str}.html"
-    shutil.copy2(report_path, dest)
+    archive_date = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
+    archive_dest = archive / f"{archive_date}.html"
 
-    # index.html → 최신 리포트로 redirect
-    latest_html = f"""<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=./report_{date_str}.html">
-<title>ETF 포트폴리오 리포트</title>
-<style>body{{font-family:'Malgun Gothic',sans-serif;display:flex;justify-content:center;
-  align-items:center;height:100vh;margin:0;background:#F2F5F9;color:#444;}}
-  a{{color:#1F3864;font-size:16px;}}</style>
-</head>
-<body><p>최신 리포트로 이동 중… <a href="./report_{date_str}.html">클릭해서 이동</a></p></body>
-</html>"""
-    (docs / "index.html").write_text(latest_html, encoding="utf-8")
+    shutil.copy2(report_path, docs / "index.html")
+    shutil.copy2(report_path, archive_dest)
 
     try:
         def _git(*args):
@@ -103,9 +94,8 @@ def _push_pages(report_path: str, date_str: str) -> str | None:
                 print(f"  [git] {r.stderr.strip()}")
             return r.returncode
 
-        _git("add", str(dest), str(docs / "index.html"))
+        _git("add", str(docs / "index.html"), str(archive_dest))
 
-        # 변경사항 없으면 스킵
         staged = subprocess.run(["git", "diff", "--cached", "--name-only"],
                                 capture_output=True, text=True).stdout.strip()
         if not staged:
@@ -114,15 +104,13 @@ def _push_pages(report_path: str, date_str: str) -> str | None:
             _git("commit", "-m", f"report: {date_str}")
             rc = _git("push")
             if rc == 0:
-                print(f"  [pages] push 완료 → docs/report_{date_str}.html")
+                print(f"  [pages] push 완료 → docs/index.html + archive/{archive_date}.html")
             else:
                 print("  [pages] push 실패 — 로컬 파일은 정상 저장됨")
 
-        # Pages URL 반환 (repo 이름 기반 추정)
         remote = subprocess.run(["git", "remote", "get-url", "origin"],
                                 capture_output=True, text=True).stdout.strip()
         if "github.com" in remote:
-            # https://github.com/user/repo.git → user/repo
             repo_part = remote.replace("https://github.com/", "").replace(".git", "")
             user, repo = repo_part.split("/", 1)
             return f"https://{user}.github.io/{repo}/"
@@ -154,6 +142,8 @@ def main():
     import pipeline.score     as score
     import pipeline.construct as construct
     import pipeline.diff      as diff
+    import pipeline.history   as history
+    import pipeline.etf_radar as etf_radar
     import pipeline.report    as report
 
     bar = "=" * 62
@@ -193,12 +183,23 @@ def main():
         print("\n[STEP 5] 전일 대비 diff")
         diff_result = diff.run(portfolio, cfg, date_str)
 
-        # ── STEP 6: HTML 리포트 ──────────────────────────────────────────────
-        print("\n[STEP 6] HTML 리포트 생성")
-        report_path = report.run(portfolio, diff_result, df_cls, cfg, date_str)
+        # ── STEP 6: 변동 이력 누적 ──────────────────────────────────────────
+        print("\n[STEP 6] 변동 이력 저장")
+        hist_df = history.run(diff_result, cfg, date_str)
 
-        # ── STEP 7: GitHub Pages 배포 ────────────────────────────────────────
-        print("\n[STEP 7] GitHub Pages 배포")
+        # ── STEP 7: ETF 인사이트 레이더 ─────────────────────────────────────
+        print("\n[STEP 7] ETF 인사이트 레이더")
+        radar_result = etf_radar.run(cfg, portfolio, date_str)
+        status = "가능" if radar_result.get("available") else radar_result.get("reason","불가")
+        print(f"  [radar] 비교: {status}")
+
+        # ── STEP 8: HTML 리포트 ──────────────────────────────────────────────
+        print("\n[STEP 8] HTML 리포트 생성")
+        report_path = report.run(portfolio, diff_result, df_cls, cfg, date_str,
+                                 history=hist_df, radar=radar_result)
+
+        # ── STEP 9: GitHub Pages 배포 ────────────────────────────────────────
+        print("\n[STEP 9] GitHub Pages 배포")
         pages_url = _push_pages(report_path, date_str)
 
         # ── 완료 요약 ─────────────────────────────────────────────────────────
