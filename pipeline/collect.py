@@ -82,12 +82,12 @@ def fetch_timefolio(etf_code: str, sess: requests.Session) -> pd.DataFrame:
 
     df = df.rename(columns=col_map)
     result = pd.DataFrame()
-    result["ETF코드"]    = etf_code
     result["티커_원본"]  = df.get("티커_원본", "").astype(str).str.strip()
     result["종목명"]     = df.get("종목명", "").astype(str).str.strip()
     result["수량"]       = df.get("수량",       pd.Series(dtype=object)).apply(_to_num)
     result["평가금액(원)"] = df.get("평가금액(원)", pd.Series(dtype=object)).apply(_to_num)
     result["비중(%)"]    = df.get("비중(%)",     pd.Series(dtype=object)).apply(_to_num)
+    result["ETF코드"]    = etf_code  # 빈 DF에 먼저 할당하면 확장 시 NaN이 되므로 마지막에 대입
 
     result = result[result["종목명"].str.strip().ne("") & result["종목명"].notna()]
     return result[RAW_COLS]
