@@ -30,15 +30,16 @@ def run(df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
         gics   = info.get("gics_sector", "")
         tech_e = info.get("tech_economic", "")
 
-        if not info and ticker not in ("CASH",):
+        # 파생/선물/ETF는 sector_map 불필요 — 미분류 경고 제외
+        if not info and ticker not in ("CASH",) and atype not in ("futures", "index_future", "etf"):
             unmapped.append(ticker)
             gics = "미분류"
 
         # 버킷 결정
         if atype in ("cash",) or ticker == "CASH":
             bucket = "cash"
-        elif atype in ("futures", "etf"):
-            bucket = "cash"          # 파생·ETF는 현금 버킷으로 취급
+        elif atype in ("futures", "etf", "index_future"):
+            bucket = "cash"          # 파생·ETF·지수선물은 현금 버킷으로 취급
         elif gics in tech_group:
             bucket = "tech"
         elif gics == "미분류":

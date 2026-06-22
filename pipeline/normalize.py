@@ -13,6 +13,10 @@ _CASH_PAT    = re.compile(r"^(CASH|KRD|현금|설정현금액|원화현금)", re
 _FUTURES_PAT = re.compile(r"INDEX$|FUTURE|MINI|M\d$", re.I)   # NQM6 INDEX 등
 _KR_ETF_PAT  = re.compile(r"^[0-9A-Z]{6,7}$")                 # 0043Y0 형태
 
+# 지수선물 패턴: 루트(1-4자) + 월코드(FGHJKMNQUVXZ) + 연도(1-2자리)
+# 예) NQU6, NQZ6, NQH7, ESH7, RTYU6 — 롤오버돼도 자동 감지
+_INDEX_FUTURE_PAT = re.compile(r'^[A-Z]{1,4}[FGHJKMNQUVXZ]\d{1,2}$')
+
 
 def normalize_ticker(raw: str) -> str:
     """raw 티커 문자열 → 정규화된 base ticker"""
@@ -26,12 +30,14 @@ def normalize_ticker(raw: str) -> str:
 
 
 def ticker_type(ticker: str, raw: str) -> str:
-    """cash / futures / etf / stock 분류"""
+    """cash / futures / index_future / etf / stock 분류"""
     if ticker == "CASH":
         return "cash"
     raw_upper = str(raw).upper()
     if _FUTURES_PAT.search(raw_upper):
         return "futures"
+    if _INDEX_FUTURE_PAT.match(ticker):   # NQU6, ESZ6 등 지수선물 (롤오버 자동 처리)
+        return "index_future"
     if _KR_ETF_PAT.match(ticker) and len(ticker) >= 6:
         return "etf"
     return "stock"
