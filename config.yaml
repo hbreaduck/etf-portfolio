@@ -18,6 +18,10 @@ name_floor: 0.02                  # 종목당 하한
 rebalance_threshold: 0.005        # 비중변화 0.5%p 미만은 '유지'
 
 # 경로 설정
+etf_radar:
+  compare_period: daily        # daily | weekly
+  min_change_pct: 0.5          # Δ%p 미만 변동은 레이더에서 제외
+
 paths:
   raw_dir:       data/raw
   snapshot:      data/snapshots/holdings.parquet
@@ -25,3 +29,4 @@ paths:
   output_dir:    output
   portfolio_dir: data/portfolios
   log_dir:       logs
+  diff_history:  data/diff_history.parquet

@@ -92,6 +92,20 @@ tr:hover td{{filter:brightness(.97);}}
 .held-row{{font-size:11px;color:#888;margin-top:12px;}}
 .pos{{color:var(--green);font-weight:700;}} .neg{{color:var(--red);font-weight:700;}}
 footer{{text-align:center;color:#bbb;font-size:11px;padding:22px;}}
+/* ── history ── */
+.hist-first{{color:var(--blue);font-style:italic;}}
+/* ── radar ── */
+.star{{display:inline-block;color:#E6AC00;font-size:14px;margin-left:3px;}}
+.badge-port{{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;
+             font-weight:700;background:#D5F5E3;color:#1E8449;}}
+.badge-noport{{display:inline-block;padding:1px 6px;border-radius:8px;font-size:10px;
+               font-weight:700;background:#FDEBD0;color:#C0392B;}}
+.noport-row td{{background:#FEF9F0 !important;}}
+.etf-tag{{display:inline-block;padding:1px 5px;border-radius:4px;font-size:10px;
+           font-weight:600;margin:1px;background:#EBF5FB;color:#1A5276;}}
+.delta-up{{color:var(--green);font-weight:700;}}
+.delta-dn{{color:var(--red);font-weight:700;}}
+.radar-sub{{font-size:12px;color:#888;font-weight:400;margin-left:6px;}}
 </style>
 </head>
 <body>"""
@@ -111,6 +125,40 @@ def _warning_box(tickers: list) -> str:
   <div class="wt">&#9888;&#65039; 미분류 종목 {len(tickers)}개 — sector_map.csv에 GICS 섹터 추가 필요</div>
   <div class="wt2">{items}</div>
 </div>"""
+
+
+def _futures_exposure_bar(classified: "pd.DataFrame | None") -> str:
+    """ETF 내 지수선물 비중을 ETF별로 한 줄로 표시."""
+    if classified is None or "asset_type" not in classified.columns:
+        return ""
+    fut = classified[classified["asset_type"].isin(["futures", "index_future"])]
+    if fut.empty:
+        return ""
+
+    etf_totals  = classified.groupby("ETF코드")["weight_pct"].sum()
+    etf_fut_pct = fut.groupby("ETF코드")["weight_pct"].sum()
+
+    parts = []
+    for etf_code in etf_fut_pct.index:
+        total = etf_totals.get(etf_code, 1) or 1
+        pct   = etf_fut_pct[etf_code] / total * 100
+        tkrs  = ", ".join(sorted(fut[fut["ETF코드"] == etf_code]["ticker"].unique()))
+        parts.append(
+            f'<span style="margin-right:18px;">'
+            f'<b style="color:#7D5A1E;">{_e(etf_code)}</b>'
+            f'&nbsp;<span style="font-family:monospace;font-size:11px;color:#555;">{_e(tkrs)}</span>'
+            f'&nbsp;<b>{pct:.2f}%</b></span>'
+        )
+
+    body = "&nbsp;&nbsp;|&nbsp;&nbsp;".join(parts)
+    return (
+        '<div style="background:#FDF6E3;border:1px solid #D4A843;border-radius:6px;'
+        'padding:9px 16px;margin-top:-4px;margin-bottom:18px;font-size:12px;">'
+        '<span style="font-weight:700;color:#7D5A1E;">&#128202; ETF 내 선물/현금성 비중</span>'
+        '&ensp;<span style="color:#999;font-size:11px;">(지수선물 — 종목 유니버스 제외)</span>'
+        f'&emsp;{body}'
+        '</div>'
+    )
 
 
 def _bucket_cards(targets: dict, actual: dict) -> str:
@@ -298,6 +346,154 @@ def _diff_section(diff: dict) -> str:
 </div>"""
 
 
+def _history_section(hist: "pd.DataFrame | None") -> str:
+    if hist is None or (hasattr(hist, "empty") and hist.empty):
+        return ""
+
+    rows_html = ""
+    for row in hist.itertuples(index=False):
+        d = str(row.date)
+        date_label = f"{d[:4]}-{d[4:6]}-{d[6:]}"
+        to_val = float(row.turnover_pct) if row.turnover_pct else 0.0
+        to_col = "var(--red)" if to_val > 10 else ("var(--blue)" if to_val > 3 else "#444")
+
+        added_val   = _e(row.added)   if row.added   else "&#8212;"
+        removed_val = _e(row.removed) if row.removed else "&#8212;"
+        chg_val     = _e(row.major_changes) if row.major_changes else "&#8212;"
+
+        is_base = row.added == "기준일(최초)"
+        added_html   = f'<span class="hist-first">{added_val}</span>' if is_base else f'<span style="color:var(--green);">{added_val}</span>'
+        removed_html = "" if is_base else f'<span style="color:var(--red);">{removed_val}</span>'
+        to_html      = "" if is_base else f'<b style="color:{to_col};">{to_val:.2f}%</b>'
+
+        rows_html += f"""<tr>
+  <td style="white-space:nowrap;font-weight:600;">{date_label}</td>
+  <td>{added_html}</td>
+  <td>{removed_html}</td>
+  <td>{chg_val}</td>
+  <td class="r">{to_html}</td>
+</tr>"""
+
+    return f"""<div class="card">
+  <h2>포트폴리오 변동 이력</h2>
+  <table>
+    <thead><tr>
+      <th>일자</th><th>신규편입</th><th>편출</th><th>주요 비중변동</th><th class="r">턴오버(%)</th>
+    </tr></thead>
+    <tbody>{rows_html}</tbody>
+  </table>
+</div>"""
+
+
+def _etf_radar_section(radar: dict) -> str:
+    from pipeline.etf_radar import ETF_SHORT
+
+    if not radar or not radar.get("available"):
+        reason = radar.get("reason", "전일 스냅샷 없음") if radar else "데이터 없음"
+        return f"""<div class="card">
+  <h2>ETF 인사이트 레이더</h2>
+  <div style="color:#888;font-size:12px;padding:8px 0;">데이터 부족 &#8212; {_e(reason)}</div>
+</div>"""
+
+    prev_d    = radar["prev_date"]
+    prev_lbl  = f"{prev_d[:4]}-{prev_d[4:6]}-{prev_d[6:]}"
+    period_lbl = "전주" if radar["period"] == "weekly" else "전일"
+    min_chg   = radar.get("min_change_pct", 0.5)
+
+    def etf_tags(etfs):
+        return " ".join(f'<span class="etf-tag">{_e(ETF_SHORT.get(e, e))}</span>' for e in etfs)
+
+    def port_badge(in_port: bool) -> str:
+        if in_port:
+            return '<span class="badge-port">포함</span>'
+        return '<span class="badge-noport">미반영</span>'
+
+    def star_mark(star: bool) -> str:
+        return '<span class="star" title="2개 이상 ETF에서 동시 증가">&#9733;</span>' if star else ""
+
+    def delta_fmt(v: float) -> str:
+        sign = "+" if v > 0 else ""
+        cls  = "delta-up" if v > 0 else "delta-dn"
+        return f'<span class="{cls}">{sign}{v:.2f}%p</span>'
+
+    # ── 신규 편입 ──────────────────────────────────────────────────────────
+    new_html = ""
+    entries = radar.get("new_entries", [])
+    if entries:
+        rows = ""
+        for t in entries:
+            rc = "noport-row" if not t["in_portfolio"] else ""
+            rows += f"""<tr class="{rc}">
+  <td><b>{_e(t['ticker'])}</b>{star_mark(t['star'])}</td>
+  <td>{_e(t['name'])}</td>
+  <td>{etf_tags(t['etfs'])}</td>
+  <td class="c">{port_badge(t['in_portfolio'])}</td>
+</tr>"""
+        new_html = f"""<h3 style="color:var(--green);">&#9650; 신규 편입 {len(entries)}종목
+  <span class="radar-sub">vs {prev_lbl}</span></h3>
+<table><thead><tr><th>티커</th><th>종목명</th><th>ETF</th><th class="c">포트폴리오</th></tr></thead>
+<tbody>{rows}</tbody></table>"""
+
+    # ── 완전 편출 ──────────────────────────────────────────────────────────
+    exit_html = ""
+    exits = radar.get("exits", [])
+    if exits:
+        rows = ""
+        for t in exits:
+            rc = "noport-row" if not t["in_portfolio"] else ""
+            rows += f"""<tr class="{rc}" style="background:#FAFAFA;">
+  <td><b>{_e(t['ticker'])}</b></td>
+  <td>{_e(t['name'])}</td>
+  <td>{etf_tags(t['etfs'])}</td>
+  <td class="c">{port_badge(t['in_portfolio'])}</td>
+</tr>"""
+        exit_html = f"""<h3 style="color:var(--red);margin-top:16px;">&#9660; 완전 편출 {len(exits)}종목
+  <span class="radar-sub">vs {prev_lbl}</span></h3>
+<table><thead><tr><th>티커</th><th>종목명</th><th>ETF</th><th class="c">포트폴리오</th></tr></thead>
+<tbody>{rows}</tbody></table>"""
+
+    # ── 비중 급변 ──────────────────────────────────────────────────────────
+    mover_html = ""
+    movers = radar.get("movers", [])
+    if movers:
+        rows = ""
+        for t in movers:
+            rc   = "noport-row" if not t["in_portfolio"] else ""
+            d_by = t["delta_by_etf"]
+            d456  = delta_fmt(d_by["456600"])  if "456600"  in d_by else "<span style='color:#ccc;'>&#8212;</span>"
+            d426  = delta_fmt(d_by["426030"])  if "426030"  in d_by else "<span style='color:#ccc;'>&#8212;</span>"
+            d001  = delta_fmt(d_by["00015B0"]) if "00015B0" in d_by else "<span style='color:#ccc;'>&#8212;</span>"
+            rows += f"""<tr class="{rc}">
+  <td><b>{_e(t['ticker'])}</b>{star_mark(t['star'])}</td>
+  <td>{_e(t['name'])}</td>
+  <td class="r">{d456}</td>
+  <td class="r">{d426}</td>
+  <td class="r">{d001}</td>
+  <td class="r">{delta_fmt(t['total_delta'])}</td>
+  <td class="c">{port_badge(t['in_portfolio'])}</td>
+</tr>"""
+        mover_html = f"""<h3 style="color:var(--blue);margin-top:16px;">&#8597; 비중 급변 상위
+  <span class="radar-sub">&#916;&#8805;{min_chg}%p, {len(movers)}종목, vs {prev_lbl}</span></h3>
+<table><thead><tr>
+  <th>티커</th><th>종목명</th>
+  <th class="r">AI인공지능&#916;</th><th class="r">나스닥100&#916;</th><th class="r">나스닥성장&#916;</th>
+  <th class="r">합계&#916;</th><th class="c">포트폴리오</th>
+</tr></thead><tbody>{rows}</tbody></table>
+<div style="font-size:11px;color:#888;margin-top:8px;">
+  &#9733; = 2개 이상 ETF에서 동시 증가 &nbsp;|&nbsp;
+  <span class="badge-noport">미반영</span> = 현재 15종목 포트폴리오 미포함
+</div>"""
+
+    return f"""<div class="card">
+  <h2>ETF 인사이트 레이더
+    <span class="radar-sub">소스 ETF 3종 전체 구성종목 {period_lbl} 변동</span>
+  </h2>
+  {new_html}
+  {exit_html}
+  {mover_html}
+</div>"""
+
+
 def _footer() -> str:
     return """</div>
 <footer>자동 생성 &#8212; ETF Portfolio Pipeline</footer>
@@ -307,9 +503,12 @@ def _footer() -> str:
 # ── 메인 ───────────────────────────────────────────────────────────────────────
 
 def run(port: pd.DataFrame, diff: dict, classified: pd.DataFrame,
-        cfg: dict, date_str: str) -> str:
+        cfg: dict, date_str: str,
+        history=None, radar=None) -> str:
     """
     HTML 리포트를 생성하고 파일 경로를 반환.
+    history : history.run() 반환 DataFrame (변동 이력)
+    radar   : etf_radar.run() 반환 dict
     """
     out_dir = pathlib.Path(cfg["paths"].get("output_dir", "output"))
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -329,7 +528,7 @@ def run(port: pd.DataFrame, diff: dict, classified: pd.DataFrame,
     # 미분류 티커 수집
     unclassified = []
     if classified is not None and "gics_sector" in classified.columns:
-        mask = (classified["asset_type"] == "stock") & (
+        mask = (classified["asset_type"].isin(["stock"])) & (
             classified["gics_sector"].isna() |
             (classified["gics_sector"] == "미분류") |
             (classified["bucket"] == "unclassified")
@@ -341,9 +540,12 @@ def run(port: pd.DataFrame, diff: dict, classified: pd.DataFrame,
         parts.append(_warning_box(unclassified))
     parts += [
         _bucket_cards(targets, bucket_actual),
+        _futures_exposure_bar(classified),
         _gics_vs_econ(gics_tech_w, econ_tech_w, econ_diff),
         _portfolio_table(port),
+        _history_section(history),
         _diff_section(diff),
+        _etf_radar_section(radar),
         _footer(),
     ]
 
