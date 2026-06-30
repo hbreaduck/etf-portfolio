@@ -87,14 +87,88 @@ footer{text-align:center;color:#bbb;font-size:11px;padding:22px;}
 .delta-up{color:var(--green);font-weight:700;}
 .delta-dn{color:var(--red);font-weight:700;}
 .radar-sub{font-size:12px;color:#888;font-weight:400;margin-left:6px;}
+/* ── perf ── */
+.perf-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;}
+.pbox{background:#FAFAFA;border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}
+.pbox .lbl{font-size:11px;color:#666;margin-bottom:4px;line-height:1.4;}
+.pbox .big{font-size:26px;font-weight:700;}
+.pbox .sub{font-size:10px;color:#999;margin-top:3px;}
+.pbox.highlight{border:2px solid var(--blue);background:var(--card);}
 </style>
 </head>
 <body>
 <div class="topbar">
   <h1>&#128202; ETF 타깃 포트폴리오 리포트</h1>
-  <div class="meta">기준일: 2026-06-30<br>생성: 2026-06-30 13:17</div>
+  <div class="meta">기준일: 2026-06-30<br>생성: 2026-06-30 13:28</div>
 </div>
 <div class="container">
+<div class="card">
+  <h2>당일 포트폴리오 성과
+    <span class="radar-sub">기준 종가: 2026-06-29</span>
+  </h2>
+  <div class="perf-grid">
+  <div class="pbox highlight">
+    <div class="lbl">포트폴리오<br>(USD 기준)</div>
+    <div class="big pos">+3.79%</div>
+  </div>
+  <div class="pbox highlight">
+    <div class="lbl">포트폴리오<br>(KRW 기준)</div>
+    <div class="big pos">+4.69%</div>
+  </div>
+  <div class="pbox">
+    <div class="lbl">환율 영향<br>(USDKRW 등락)</div>
+    <div class="big pos">+0.86%p</div>
+    <div class="sub">원화 약세</div>
+  </div>
+  <div class="pbox">
+    <div class="lbl">벤치마크<br>(QQQ)</div>
+    <div class="big pos">+2.48%</div>
+  </div>
+  <div class="pbox">
+    <div class="lbl">BM 대비<br>초과수익</div>
+    <div class="big pos">+1.30%p</div>
+  </div>
+</div>
+  <h3 style="margin-top:14px;">주요 기여 종목 (기여도 절댓값 상위)</h3>
+<table>
+  <thead><tr>
+    <th>티커</th><th>종목명</th>
+    <th class="r">비중</th><th class="r">등락률</th><th class="r">기여(%p)</th>
+  </tr></thead>
+  <tbody><tr>
+  <td><b>WDC</b></td>
+  <td>Western Digital Corp</td>
+  <td class="r">5.14%</td>
+  <td class="r pos">+11.16%</td>
+  <td class="r pos">+0.574%p</td>
+</tr><tr>
+  <td><b>BE</b></td>
+  <td>Bloom Energy Corp</td>
+  <td class="r">6.10%</td>
+  <td class="r pos">+9.12%</td>
+  <td class="r pos">+0.557%p</td>
+</tr><tr>
+  <td><b>STX</b></td>
+  <td>Seagate Technology Holdings PLC</td>
+  <td class="r">5.36%</td>
+  <td class="r pos">+7.63%</td>
+  <td class="r pos">+0.409%p</td>
+</tr><tr>
+  <td><b>GOOGL</b></td>
+  <td>Alphabet Inc</td>
+  <td class="r">7.55%</td>
+  <td class="r pos">+4.82%</td>
+  <td class="r pos">+0.364%p</td>
+</tr><tr>
+  <td><b>TSLA</b></td>
+  <td>Tesla Inc</td>
+  <td class="r">4.29%</td>
+  <td class="r pos">+8.46%</td>
+  <td class="r pos">+0.363%p</td>
+</tr></tbody>
+</table>
+  
+</div>
 <div class="bucket-grid"><div class="bcard tech">
   <div class="lbl">테크</div>
   <div class="big">50.00%</div>
