@@ -143,6 +143,7 @@ def main():
     import pipeline.construct as construct
     import pipeline.diff      as diff
     import pipeline.history   as history
+    import pipeline.perf      as perf
     import pipeline.etf_radar as etf_radar
     import pipeline.report    as report
 
@@ -187,19 +188,23 @@ def main():
         print("\n[STEP 6] 변동 이력 저장")
         hist_df = history.run(diff_result, cfg, date_str)
 
-        # ── STEP 7: ETF 인사이트 레이더 ─────────────────────────────────────
-        print("\n[STEP 7] ETF 인사이트 레이더")
+        # ── STEP 7: 당일 성과 계산 ──────────────────────────────────────────
+        print("\n[STEP 7] 당일 포트폴리오 성과 계산")
+        perf_result = perf.run(portfolio, cfg, date_str)
+
+        # ── STEP 8: ETF 인사이트 레이더 ─────────────────────────────────────
+        print("\n[STEP 8] ETF 인사이트 레이더")
         radar_result = etf_radar.run(cfg, portfolio, date_str)
         status = "가능" if radar_result.get("available") else radar_result.get("reason","불가")
         print(f"  [radar] 비교: {status}")
 
-        # ── STEP 8: HTML 리포트 ──────────────────────────────────────────────
-        print("\n[STEP 8] HTML 리포트 생성")
+        # ── STEP 9: HTML 리포트 ──────────────────────────────────────────────
+        print("\n[STEP 9] HTML 리포트 생성")
         report_path = report.run(portfolio, diff_result, df_cls, cfg, date_str,
-                                 history=hist_df, radar=radar_result)
+                                 history=hist_df, radar=radar_result, perf=perf_result)
 
-        # ── STEP 9: GitHub Pages 배포 ────────────────────────────────────────
-        print("\n[STEP 9] GitHub Pages 배포")
+        # ── STEP 10: GitHub Pages 배포 ───────────────────────────────────────
+        print("\n[STEP 10] GitHub Pages 배포")
         pages_url = _push_pages(report_path, date_str)
 
         # ── 완료 요약 ─────────────────────────────────────────────────────────

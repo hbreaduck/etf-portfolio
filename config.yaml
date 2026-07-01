@@ -22,6 +22,9 @@ etf_radar:
   compare_period: daily        # daily | weekly
   min_change_pct: 0.5          # Δ%p 미만 변동은 레이더에서 제외
 
+performance:
+  benchmark: QQQ          # 벤치마크 티커 (NASDAQ 100 ETF)
+
 paths:
   raw_dir:       data/raw
   snapshot:      data/snapshots/holdings.parquet
@@ -30,3 +33,4 @@ paths:
   portfolio_dir: data/portfolios
   log_dir:       logs
   diff_history:  data/diff_history.parquet
+  perf_history:  data/perf_history.parquet

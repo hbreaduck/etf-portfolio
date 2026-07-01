@@ -106,6 +106,57 @@ footer{{text-align:center;color:#bbb;font-size:11px;padding:22px;}}
 .delta-up{{color:var(--green);font-weight:700;}}
 .delta-dn{{color:var(--red);font-weight:700;}}
 .radar-sub{{font-size:12px;color:#888;font-weight:400;margin-left:6px;}}
+/* ── perf ── */
+.perf-grid{{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px;}}
+.pbox{{background:#FAFAFA;border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;}}
+.pbox .lbl{{font-size:11px;color:#666;margin-bottom:4px;line-height:1.4;}}
+.pbox .big{{font-size:26px;font-weight:700;}}
+.pbox .sub{{font-size:10px;color:#999;margin-top:3px;}}
+.pbox.highlight{{border:2px solid var(--blue);background:var(--card);}}
+/* ── 반응형 (태블릿 ≤ 768px) ── */
+@media(max-width:768px){{
+  .topbar{{padding:12px 16px;flex-direction:column;align-items:flex-start;gap:4px;}}
+  .topbar h1{{font-size:15px;letter-spacing:0;}}
+  .topbar .meta{{font-size:10px;text-align:left;}}
+  .container{{margin:10px auto;padding:0 12px;}}
+  .card{{padding:16px 12px;margin-bottom:12px;}}
+  .card h2{{font-size:13px;margin-bottom:10px;}}
+  .card h3{{font-size:12px;margin:12px 0 6px;}}
+  .bucket-grid{{grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;}}
+  .bcard{{padding:10px 6px;}}
+  .bcard .big{{font-size:22px;}}
+  .bcard .sub,.bcard .ddiff{{font-size:10px;}}
+  .perf-grid{{grid-template-columns:repeat(2,1fr);gap:8px;}}
+  .pbox{{padding:10px;}}
+  .pbox .big{{font-size:20px;}}
+  .pbox .lbl{{font-size:10px;}}
+  .exp-grid{{grid-template-columns:1fr;gap:8px;}}
+  .ebox{{padding:12px;}}
+  .ebox .big{{font-size:22px;}}
+  td{{white-space:nowrap;}}
+  .tover{{display:block;margin:10px 0;padding:10px 16px;}}
+  .tover .tv{{font-size:22px;}}
+  .badge{{margin-bottom:4px;}}
+  .held-row{{line-height:2;word-break:break-word;white-space:normal;}}
+  .warn-box{{padding:10px 12px;}}
+  footer{{padding:14px;}}
+}}
+/* ── 반응형 (모바일 ≤ 480px) ── */
+@media(max-width:480px){{
+  body{{font-size:12px;}}
+  .topbar{{padding:10px 14px;}}
+  .topbar h1{{font-size:13px;}}
+  .container{{padding:0 8px;}}
+  .card{{padding:12px 10px;border-radius:6px;}}
+  .bucket-grid{{grid-template-columns:repeat(3,1fr);gap:6px;}}
+  .bcard .big{{font-size:18px;}}
+  .bcard .ddiff{{font-size:9px;white-space:normal;word-break:keep-all;line-height:1.3;}}
+  .perf-grid{{grid-template-columns:repeat(2,1fr);gap:6px;}}
+  .perf-grid>:last-child:nth-child(odd){{grid-column:1/-1;}}
+  .pbox .big{{font-size:17px;}}
+  .ebox .big{{font-size:20px;}}
+  th,td{{padding:4px 6px;font-size:11px;}}
+}}
 </style>
 </head>
 <body>"""
@@ -494,9 +545,123 @@ def _etf_radar_section(radar: dict) -> str:
 </div>"""
 
 
+def _perf_section(perf: dict) -> str:
+    if not perf or not perf.get("available"):
+        reason = perf.get("reason", "데이터 없음") if perf else "데이터 없음"
+        return f"""<div class="card">
+  <h2>당일 포트폴리오 성과</h2>
+  <div style="color:#888;font-size:12px;padding:8px 0;">데이터 부족 &#8212; {_e(reason)}</div>
+</div>"""
+
+    as_of   = _e(perf.get("as_of_date", ""))
+    bm_lbl  = _e(perf.get("bm_ticker", "QQQ"))
+
+    def fmt(v, suffix="%"):
+        if v is None:
+            return "&#8212;"
+        sign = "+" if v > 0 else ""
+        return f"{sign}{v:.2f}{suffix}"
+
+    def cls(v):
+        if v is None:
+            return ""
+        return "pos" if v > 0 else ("neg" if v < 0 else "")
+
+    p_usd  = perf.get("port_usd_pct")
+    p_krw  = perf.get("port_krw_pct")
+    fx     = perf.get("fx_pct")
+    bm     = perf.get("bm_usd_pct")
+    excess = perf.get("excess_usd_pct")
+
+    # FX 방향 설명
+    if fx is not None:
+        fx_desc = "원화 약세" if fx > 0.05 else ("원화 강세" if fx < -0.05 else "환율 보합")
+    else:
+        fx_desc = ""
+
+    boxes = f"""<div class="perf-grid">
+  <div class="pbox highlight">
+    <div class="lbl">포트폴리오<br>(USD 기준)</div>
+    <div class="big {cls(p_usd)}">{fmt(p_usd)}</div>
+  </div>
+  <div class="pbox highlight">
+    <div class="lbl">포트폴리오<br>(KRW 기준)</div>
+    <div class="big {cls(p_krw)}">{fmt(p_krw)}</div>
+  </div>
+  <div class="pbox">
+    <div class="lbl">환율 영향<br>(USDKRW 등락)</div>
+    <div class="big {cls(fx)}">{fmt(fx, "%p")}</div>
+    <div class="sub">{_e(fx_desc)}</div>
+  </div>
+  <div class="pbox">
+    <div class="lbl">벤치마크<br>({bm_lbl})</div>
+    <div class="big {cls(bm)}">{fmt(bm)}</div>
+  </div>
+  <div class="pbox">
+    <div class="lbl">BM 대비<br>초과수익</div>
+    <div class="big {cls(excess)}">{fmt(excess, "%p")}</div>
+  </div>
+</div>"""
+
+    # 기여도 상위 5 (절댓값 기준)
+    contrib = perf.get("contrib", [])
+    contrib_html = ""
+    if contrib:
+        top5 = contrib[:5]
+        rows = ""
+        for c in top5:
+            r_cls = "pos" if c["ret_pct"] > 0 else "neg"
+            co_cls = "pos" if c["contrib_pct"] > 0 else "neg"
+            r_sign = "+" if c["ret_pct"] > 0 else ""
+            co_sign = "+" if c["contrib_pct"] > 0 else ""
+            rows += f"""<tr>
+  <td><b>{_e(c['ticker'])}</b></td>
+  <td>{_e(c['name'])}</td>
+  <td class="r">{c['weight_pct']:.2f}%</td>
+  <td class="r {r_cls}">{r_sign}{c['ret_pct']:.2f}%</td>
+  <td class="r {co_cls}">{co_sign}{c['contrib_pct']:.3f}%p</td>
+</tr>"""
+        contrib_html = f"""<h3 style="margin-top:14px;">주요 기여 종목 (기여도 절댓값 상위)</h3>
+<table>
+  <thead><tr>
+    <th>티커</th><th>종목명</th>
+    <th class="r">비중</th><th class="r">등락률</th><th class="r">기여(%p)</th>
+  </tr></thead>
+  <tbody>{rows}</tbody>
+</table>"""
+
+    missing = perf.get("missing", [])
+    missing_html = ""
+    if missing:
+        missing_html = (f'<div style="font-size:11px;color:#999;margin-top:10px;">'
+                        f'수익률 미수집: {", ".join(_e(t) for t in missing)}</div>')
+
+    return f"""<div class="card">
+  <h2>당일 포트폴리오 성과
+    <span class="radar-sub">기준 종가: {as_of}</span>
+  </h2>
+  {boxes}
+  {contrib_html}
+  {missing_html}
+</div>"""
+
+
 def _footer() -> str:
     return """</div>
 <footer>자동 생성 &#8212; ETF Portfolio Pipeline</footer>
+<script>
+(function(){
+  /* 모든 카드 안의 table을 가로 스크롤 래퍼로 감싼다 (Safari 대응) */
+  document.querySelectorAll('.card table').forEach(function(t){
+    var w=document.createElement('div');
+    w.style.cssText='overflow-x:auto;-webkit-overflow-scrolling:touch;';
+    t.parentNode.insertBefore(w,t);
+    w.appendChild(t);
+    t.style.width='';          /* CSS width:100% 해제 → 내용 너비로 자연 확장 */
+    t.style.minWidth='100%';   /* 넓은 화면에선 카드 너비 꽉 채움 */
+  });
+})();
+</script>
 </body></html>"""
 
 
@@ -504,11 +669,12 @@ def _footer() -> str:
 
 def run(port: pd.DataFrame, diff: dict, classified: pd.DataFrame,
         cfg: dict, date_str: str,
-        history=None, radar=None) -> str:
+        history=None, radar=None, perf=None) -> str:
     """
     HTML 리포트를 생성하고 파일 경로를 반환.
     history : history.run() 반환 DataFrame (변동 이력)
     radar   : etf_radar.run() 반환 dict
+    perf    : perf.run() 반환 dict
     """
     out_dir = pathlib.Path(cfg["paths"].get("output_dir", "output"))
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -539,6 +705,7 @@ def run(port: pd.DataFrame, diff: dict, classified: pd.DataFrame,
     if unclassified:
         parts.append(_warning_box(unclassified))
     parts += [
+        _perf_section(perf),
         _bucket_cards(targets, bucket_actual),
         _futures_exposure_bar(classified),
         _gics_vs_econ(gics_tech_w, econ_tech_w, econ_diff),
