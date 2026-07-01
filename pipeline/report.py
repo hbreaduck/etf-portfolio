@@ -212,23 +212,14 @@ def _futures_exposure_bar(classified: "pd.DataFrame | None") -> str:
     )
 
 
-def _bucket_cards(targets: dict, actual: dict) -> str:
+def _bucket_cards(actual: dict) -> str:
     cards = ""
-    for bkt, label in [("tech", "테크"), ("other", "기타"), ("cash", "현금")]:
-        tgt = float(targets.get(bkt, 0))
+    for bkt, label in [("tech", "GICS IT"), ("other", "기타 섹터"), ("cash", "현금")]:
         act = actual.get(bkt, 0.0)
-        d   = (act - tgt) * 100
-        if abs(d) < 0.01:
-            d_cls, d_str = "diff-zero", "목표 일치"
-        elif d > 0:
-            d_cls, d_str = "pos", f"목표 대비 +{d:.2f}%p"
-        else:
-            d_cls, d_str = "neg", f"목표 대비 {d:.2f}%p"
         cards += f"""<div class="bcard {bkt}">
   <div class="lbl">{_e(label)}</div>
   <div class="big">{act*100:.2f}%</div>
-  <div class="sub">목표 {tgt*100:.0f}%</div>
-  <div class="ddiff {d_cls}">{_e(d_str)}</div>
+  <div class="sub">순수 스코어 배분</div>
 </div>"""
     return f'<div class="bucket-grid">{cards}</div>'
 
@@ -683,7 +674,6 @@ def run(port: pd.DataFrame, diff: dict, classified: pd.DataFrame,
     date_label = f"{date_str[:4]}-{date_str[4:6]}-{date_str[6:]}"
     gen_time   = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    targets      = cfg["sector_targets"]
     bucket_actual = {bkt: port[port["bucket"] == bkt]["target_weight"].sum()
                      for bkt in ["tech", "other", "cash"]}
 
@@ -706,7 +696,7 @@ def run(port: pd.DataFrame, diff: dict, classified: pd.DataFrame,
         parts.append(_warning_box(unclassified))
     parts += [
         _perf_section(perf),
-        _bucket_cards(targets, bucket_actual),
+        _bucket_cards(bucket_actual),
         _futures_exposure_bar(classified),
         _gics_vs_econ(gics_tech_w, econ_tech_w, econ_diff),
         _portfolio_table(port),

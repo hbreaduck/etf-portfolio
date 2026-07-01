@@ -1,14 +1,12 @@
 # ── ETF 포트폴리오 수집·배분 설정 ──────────────────────────────────────────────
 
-# 섹터 분류 (GICS 순수)
+# 섹터 분류 (GICS 순수 — 버킷 라벨 표시용으로만 사용)
 sector_classification: GICS
 tech_group:
   - Information Technology        # IT만 테크로 인정
 
-sector_targets:
-  tech:  0.50
-  other: 0.45                     # 자유 버킷 — 서브캡 없이 스코어 상위로 채움
-  cash:  0.05
+# sector_targets / subindustry_caps 폐지 — 순수 스코어 상위 선발
+cash_pct: 0.05                    # 현금 고정 버퍼
 
 # 종목 선정·스코어
 scoring: equal                    # 3개 ETF 비중 단순합산 (옵션: aum_weighted)
