@@ -11,7 +11,7 @@ import pandas as pd
 # 현금/파생/ETF 판별 정규식
 _CASH_PAT    = re.compile(r"^(CASH|KRD|현금|설정현금액|원화현금)", re.I)
 _FUTURES_PAT = re.compile(r"INDEX$|FUTURE|MINI|M\d$", re.I)   # NQM6 INDEX 등
-_KR_ETF_PAT  = re.compile(r"^[0-9A-Z]{6,7}$")                 # 0043Y0 형태
+_KR_ETF_PAT  = re.compile(r"^(?=.*[A-Z])[0-9A-Z]{6,7}$")      # 0043Y0 형태 (알파벳 포함 필수 — 순자리 한국/중국 주식코드 제외)
 
 # 지수선물 패턴: 루트(1-4자) + 월코드(FGHJKMNQUVXZ) + 연도(1-2자리)
 # 예) NQU6, NQZ6, NQH7, ESH7, RTYU6 — 롤오버돼도 자동 감지

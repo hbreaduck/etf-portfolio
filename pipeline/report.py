@@ -113,6 +113,22 @@ footer{{text-align:center;color:#bbb;font-size:11px;padding:22px;}}
 .pbox .big{{font-size:26px;font-weight:700;}}
 .pbox .sub{{font-size:10px;color:#999;margin-top:3px;}}
 .pbox.highlight{{border:2px solid var(--blue);background:var(--card);}}
+/* ── etf holdings ── */
+.eh-grid{{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}}
+.ehcol{{border:1px solid var(--border);border-radius:6px;overflow:hidden;}}
+.ehcol-head{{background:var(--blue);color:#fff;padding:9px 12px;}}
+.ehcol-head .ehn{{font-weight:700;font-size:13px;}}
+.ehcol-head .ehm{{font-size:10px;opacity:.75;margin-top:2px;}}
+.ehcol-body{{max-height:520px;overflow-y:auto;}}
+.ehcol table{{font-size:11px;width:100%;}}
+.ehcol table th{{background:#3A5A8C;color:#fff;padding:5px 7px;font-size:10px;position:sticky;top:0;z-index:1;}}
+.ehcol table td{{padding:4px 7px;}}
+.ehcol table tr:hover td{{filter:brightness(.96);}}
+.at-e{{display:inline-block;padding:0 4px;border-radius:3px;font-size:9px;font-weight:700;background:#D6EAF8;color:#1A5276;vertical-align:middle;}}
+.at-f{{display:inline-block;padding:0 4px;border-radius:3px;font-size:9px;font-weight:700;background:#FEF9E7;color:#7D5A1E;border:1px solid #F0C040;vertical-align:middle;}}
+.at-c{{display:inline-block;padding:0 4px;border-radius:3px;font-size:9px;font-weight:700;background:#F2F3F4;color:#888;vertical-align:middle;}}
+.eh-port td{{background:#EBF5EB !important;}}
+.eh-port td:first-child{{border-left:3px solid var(--green);}}
 /* ── 반응형 (태블릿 ≤ 768px) ── */
 @media(max-width:768px){{
   .topbar{{padding:12px 16px;flex-direction:column;align-items:flex-start;gap:4px;}}
@@ -133,6 +149,7 @@ footer{{text-align:center;color:#bbb;font-size:11px;padding:22px;}}
   .exp-grid{{grid-template-columns:1fr;gap:8px;}}
   .ebox{{padding:12px;}}
   .ebox .big{{font-size:22px;}}
+  .eh-grid{{grid-template-columns:repeat(2,1fr);}}
   td{{white-space:nowrap;}}
   .tover{{display:block;margin:10px 0;padding:10px 16px;}}
   .tover .tv{{font-size:22px;}}
@@ -155,6 +172,7 @@ footer{{text-align:center;color:#bbb;font-size:11px;padding:22px;}}
   .perf-grid>:last-child:nth-child(odd){{grid-column:1/-1;}}
   .pbox .big{{font-size:17px;}}
   .ebox .big{{font-size:20px;}}
+  .eh-grid{{grid-template-columns:1fr;}}
   th,td{{padding:4px 6px;font-size:11px;}}
 }}
 </style>
@@ -505,12 +523,14 @@ def _etf_radar_section(radar: dict) -> str:
             d456  = delta_fmt(d_by["456600"])  if "456600"  in d_by else "<span style='color:#ccc;'>&#8212;</span>"
             d426  = delta_fmt(d_by["426030"])  if "426030"  in d_by else "<span style='color:#ccc;'>&#8212;</span>"
             d001  = delta_fmt(d_by["00015B0"]) if "00015B0" in d_by else "<span style='color:#ccc;'>&#8212;</span>"
+            d466  = delta_fmt(d_by["466950"])  if "466950"  in d_by else "<span style='color:#ccc;'>&#8212;</span>"
             rows += f"""<tr class="{rc}">
   <td><b>{_e(t['ticker'])}</b>{star_mark(t['star'])}</td>
   <td>{_e(t['name'])}</td>
   <td class="r">{d456}</td>
   <td class="r">{d426}</td>
   <td class="r">{d001}</td>
+  <td class="r">{d466}</td>
   <td class="r">{delta_fmt(t['total_delta'])}</td>
   <td class="c">{port_badge(t['in_portfolio'])}</td>
 </tr>"""
@@ -518,7 +538,7 @@ def _etf_radar_section(radar: dict) -> str:
   <span class="radar-sub">&#916;&#8805;{min_chg}%p, {len(movers)}종목, vs {prev_lbl}</span></h3>
 <table><thead><tr>
   <th>티커</th><th>종목명</th>
-  <th class="r">AI인공지능&#916;</th><th class="r">나스닥100&#916;</th><th class="r">나스닥성장&#916;</th>
+  <th class="r">TIME AI인공지능&#916;</th><th class="r">TIME 나스닥100&#916;</th><th class="r">KoAct 나스닥성장&#916;</th><th class="r">Tiger 글로벌AI&#916;</th>
   <th class="r">합계&#916;</th><th class="c">포트폴리오</th>
 </tr></thead><tbody>{rows}</tbody></table>
 <div style="font-size:11px;color:#888;margin-top:8px;">
@@ -528,11 +548,93 @@ def _etf_radar_section(radar: dict) -> str:
 
     return f"""<div class="card">
   <h2>ETF 인사이트 레이더
-    <span class="radar-sub">소스 ETF 3종 전체 구성종목 {period_lbl} 변동</span>
+    <span class="radar-sub">소스 ETF 4종 전체 구성종목 {period_lbl} 변동</span>
   </h2>
   {new_html}
   {exit_html}
   {mover_html}
+</div>"""
+
+
+_ETF_ORDER = [
+    ("456600",  "TIME AI인공지능", "TIMEFOLIO 글로벌AI인공지능액티브"),
+    ("426030",  "TIME 나스닥100",  "TIMEFOLIO 미국나스닥100액티브"),
+    ("00015B0", "KoAct 나스닥성장","KoAct 미국나스닥성장기업액티브"),
+    ("466950",  "Tiger 글로벌AI",  "TIGER 글로벌AI액티브"),
+]
+
+_AT_BADGE = {
+    "etf":     '<span class="at-e">ETF</span>',
+    "futures": '<span class="at-f">선물</span>',
+    "cash":    '<span class="at-c">현금</span>',
+}
+
+
+def _etf_holdings_section(classified: "pd.DataFrame", portfolio: "pd.DataFrame") -> str:
+    port_tickers = set(portfolio[portfolio["bucket"] != "cash"]["ticker"])
+
+    cols_html = ""
+    for code, short, full in _ETF_ORDER:
+        sub = classified[classified["ETF코드"] == code].copy()
+        if sub.empty:
+            cols_html += f'<div class="ehcol"><div class="ehcol-head"><div class="ehn">{_e(short)}</div><div class="ehm">{_e(code)} — 데이터 없음</div></div></div>'
+            continue
+
+        sub = sub.sort_values("weight_pct", ascending=False, na_position="last")
+        total_w = sub["weight_pct"].sum()
+        cnt = len(sub)
+
+        rows = ""
+        for rank, (_, r) in enumerate(sub.iterrows(), 1):
+            w = r["weight_pct"]
+            w_str = f"{w:.2f}%" if pd.notna(w) and w != 0 else "—"
+            badge = _AT_BADGE.get(r.get("asset_type", ""), "")
+            in_port = r["ticker"] in port_tickers
+            rc = ' class="eh-port"' if in_port else ""
+            ticker_cell = f'<b>{_e(r["ticker"])}</b>'
+            rows += (
+                f'<tr{rc}>'
+                f'<td style="color:#aaa;text-align:right;">{rank}</td>'
+                f'<td>{ticker_cell}{badge}</td>'
+                f'<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{_e(r["name"])}</td>'
+                f'<td style="text-align:right;font-weight:600;">{_e(w_str)}</td>'
+                f'</tr>'
+            )
+
+        cols_html += f"""<div class="ehcol">
+  <div class="ehcol-head">
+    <div class="ehn">{_e(short)}</div>
+    <div class="ehm">{_e(code)} &nbsp;|&nbsp; {cnt}종목 &nbsp;|&nbsp; 합계 {total_w:.1f}%</div>
+  </div>
+  <div class="ehcol-body">
+  <table>
+    <thead><tr>
+      <th style="text-align:right;width:22px;">#</th>
+      <th>티커</th><th>종목명</th>
+      <th style="text-align:right;">비중</th>
+    </tr></thead>
+    <tbody>{rows}</tbody>
+  </table>
+  </div>
+</div>"""
+
+    legend = (
+        '<div style="font-size:10px;color:#888;margin-top:8px;">'
+        '<span class="at-e">ETF</span>&nbsp;= ETF 편입 종목 &nbsp;|&nbsp;'
+        '<span class="at-f">선물</span>&nbsp;= 지수선물 &nbsp;|&nbsp;'
+        '<span class="at-c">현금</span>&nbsp;= 현금성 &nbsp;|&nbsp;'
+        '<span style="display:inline-block;width:10px;height:10px;background:#EBF5EB;'
+        'border-left:3px solid #196F3D;vertical-align:middle;margin-right:2px;"></span>'
+        '= 현재 포트폴리오 보유'
+        '</div>'
+    )
+
+    return f"""<div class="card">
+  <h2>ETF 구성종목 전체 비교
+    <span class="radar-sub">비중 높은 순 · 초록 행 = 현재 포트폴리오 보유</span>
+  </h2>
+  <div class="eh-grid">{cols_html}</div>
+  {legend}
 </div>"""
 
 
@@ -703,6 +805,7 @@ def run(port: pd.DataFrame, diff: dict, classified: pd.DataFrame,
         _history_section(history),
         _diff_section(diff),
         _etf_radar_section(radar),
+        _etf_holdings_section(classified, port),
         _footer(),
     ]
 

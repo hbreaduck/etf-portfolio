@@ -1,14 +1,15 @@
 """
-etf_radar.py — 소스 ETF 3종 구성종목 전일/전주 대비 변동 분석
+etf_radar.py — 소스 ETF 4종 구성종목 전일/전주 대비 변동 분석
 """
 
 import pathlib
 import pandas as pd
 
 ETF_SHORT = {
-    "456600":  "AI인공지능",
-    "426030":  "나스닥100",
-    "00015B0": "나스닥성장",
+    "456600":  "TIME AI인공지능",
+    "426030":  "TIME 나스닥100",
+    "00015B0": "KoAct 나스닥성장",
+    "466950":  "Tiger 글로벌AI",
 }
 ETF_CODES = list(ETF_SHORT.keys())
 
