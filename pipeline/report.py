@@ -22,7 +22,7 @@ def _head(date_label: str) -> str:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ETF 포트폴리오 리포트 — {_e(date_label)}</title>
+<title>액티브 ETF 타깃 포트폴리오 리포트 — {_e(date_label)}</title>
 <style>
 :root{{
   --blue:#1F3864;--tech:#2E75B6;--other:#2E8B57;--cash:#B8860B;
@@ -182,7 +182,7 @@ footer{{text-align:center;color:#bbb;font-size:11px;padding:22px;}}
 
 def _header(date_label: str, gen_time: str) -> str:
     return f"""<div class="topbar">
-  <h1>&#128202; ETF 타깃 포트폴리오 리포트</h1>
+  <h1>&#128202; 액티브 ETF 타깃 포트폴리오 리포트</h1>
   <div class="meta">기준일: {_e(date_label)}<br>생성: {_e(gen_time)}</div>
 </div>
 <div class="container">"""
