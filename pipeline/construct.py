@@ -235,7 +235,7 @@ def _sheet_portfolio(ws, port: pd.DataFrame, date_str: str):
 
 
 def _sheet_universe(ws, scored: pd.DataFrame):
-    etf_cols = ["456600", "426030", "00015B0", "466950"]
+    etf_cols = ["456600", "426030", "0015B0", "466950"]
     headers = ["티커", "종목명", "GICS섹터", "버킷", "스코어"] + etf_cols
     col_widths = [14, 38, 26, 12, 10] + [10] * len(etf_cols)
     n_cols = len(headers)

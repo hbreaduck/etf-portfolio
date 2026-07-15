@@ -8,7 +8,7 @@ import pandas as pd
 ETF_SHORT = {
     "456600":  "TIME AI인공지능",
     "426030":  "TIME 나스닥100",
-    "00015B0": "KoAct 나스닥성장",
+    "0015B0": "KoAct 나스닥성장",
     "466950":  "Tiger 글로벌AI",
 }
 ETF_CODES = list(ETF_SHORT.keys())

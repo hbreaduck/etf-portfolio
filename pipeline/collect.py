@@ -2,7 +2,7 @@
 collect.py — 4종 ETF 구성종목 수집
   456600 TIMEFOLIO 글로벌AI인공지능액티브  (timeetf.co.kr  Excel)
   426030 TIMEFOLIO 미국나스닥100액티브     (timeetf.co.kr  Excel)
-  00015B0 KoAct 미국나스닥성장기업액티브   (samsungactive   JSON API)
+  0015B0 KoAct 미국나스닥성장기업액티브   (samsungactive   JSON API)
   466950 TIGER 글로벌AI액티브             (WiseReport CU_data + yfinance 비중 역산)
 """
 
@@ -27,7 +27,7 @@ TIMEFOLIO_ETFS = {
     "426030": {"name": "TIMEFOLIO 미국나스닥100액티브",    "idx": 2, "cate": "001"},
 }
 
-KOACT = {"code": "00015B0", "name": "KoAct 미국나스닥성장기업액티브", "fId": "2ETFQ1"}
+KOACT = {"code": "0015B0", "name": "KoAct 미국나스닥성장기업액티브", "fId": "2ETFQ1"}
 SAMSUNG_BASE = "https://www.samsungactive.co.kr"
 
 TIGER_ETF_CODE = "466950"

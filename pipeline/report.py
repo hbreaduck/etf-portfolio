@@ -522,7 +522,7 @@ def _etf_radar_section(radar: dict) -> str:
             d_by = t["delta_by_etf"]
             d456  = delta_fmt(d_by["456600"])  if "456600"  in d_by else "<span style='color:#ccc;'>&#8212;</span>"
             d426  = delta_fmt(d_by["426030"])  if "426030"  in d_by else "<span style='color:#ccc;'>&#8212;</span>"
-            d001  = delta_fmt(d_by["00015B0"]) if "00015B0" in d_by else "<span style='color:#ccc;'>&#8212;</span>"
+            d001  = delta_fmt(d_by["0015B0"]) if "0015B0" in d_by else "<span style='color:#ccc;'>&#8212;</span>"
             d466  = delta_fmt(d_by["466950"])  if "466950"  in d_by else "<span style='color:#ccc;'>&#8212;</span>"
             rows += f"""<tr class="{rc}">
   <td><b>{_e(t['ticker'])}</b>{star_mark(t['star'])}</td>
@@ -559,7 +559,7 @@ def _etf_radar_section(radar: dict) -> str:
 _ETF_ORDER = [
     ("456600",  "TIME AI인공지능", "TIMEFOLIO 글로벌AI인공지능액티브"),
     ("426030",  "TIME 나스닥100",  "TIMEFOLIO 미국나스닥100액티브"),
-    ("00015B0", "KoAct 나스닥성장","KoAct 미국나스닥성장기업액티브"),
+    ("0015B0", "KoAct 나스닥성장","KoAct 미국나스닥성장기업액티브"),
     ("466950",  "Tiger 글로벌AI",  "TIGER 글로벌AI액티브"),
 ]
 
