@@ -221,10 +221,12 @@ def main():
         print(bar)
 
         # 브라우저로 리포트 열기 (인터랙티브 실행 시에만)
+        # GitHub Pages는 재빌드+CDN 캐시로 1~2분 지연되어 직후엔 이전 기준일이 보임.
+        # → 방금 생성된 로컬 리포트 파일을 직접 열어 항상 오늘 기준일이 뜨도록 함.
         if sys.platform == "win32" and sys.stdin and sys.stdin.isatty():
             import subprocess
-            url = pages_url or str(report_path)
-            subprocess.Popen(["start", "", url], shell=True)
+            local_report = pathlib.Path(report_path).resolve()
+            subprocess.Popen(["start", "", str(local_report)], shell=True)
 
     except Exception as exc:
         print(f"\n[ERROR] {exc}")
