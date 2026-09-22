@@ -71,6 +71,16 @@ _TIGER_NAME_MAP: dict[str, tuple[str, str]] = {
     "GE VERNOVA INC":                 ("GEV",    "USD"),
     "META PLATFORMS INC-CLASS A":     ("META",   "USD"),
     "LUMENTUM HOLDINGS INC":          ("LITE",   "USD"),
+    "NVIDIA CORP":                    ("NVDA",   "USD"),
+    "ORACLE CORP":                    ("ORCL",   "USD"),
+    "SERVICENOW INC":                 ("NOW",    "USD"),
+    "ATLASSIAN CORP-CL A":            ("TEAM",   "USD"),
+    "CIENA CORP":                     ("CIEN",   "USD"),
+    "CREDO TECHNOLOGY GROUP HOLDI":   ("CRDO",   "USD"),
+    "ASTERA LABS INC":                ("ALAB",   "USD"),
+    "APPLIED OPTOELECTRONICS INC":    ("AAOI",   "USD"),
+    "FABRINET":                       ("FN",     "USD"),
+    "XIAOMI CORP-CLASS B":            ("1810",   "HKD"),
     "설정현금액":                          ("CASH",   "KRW"),
     "원화현금":                            ("CASH",   "KRW"),
 }
@@ -85,6 +95,7 @@ _TIGER_YF_TICKER: dict[str, str] = {
     "000660": "000660.KS",
     "2513":   "2513.HK",
     "285A":   "285A.T",
+    "1810":   "1810.HK",
 }
 
 _FX_FALLBACK = {"USD": 1380.0, "JPY": 9.2, "HKD": 177.0, "CNY": 190.0, "KRW": 1.0}
