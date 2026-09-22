@@ -40,32 +40,59 @@ _FX_TICKER = "USDKRW=X"
 
 
 def _fetch_closes(yf_tickers: list[str]) -> pd.DataFrame:
-    """yfinance로 5영업일 일봉을 가져와 종가 DataFrame 반환."""
-    import yfinance as yf
+    """
+    Yahoo v8 chart API로 일별 종가 DataFrame을 수집.
+
+    yfinance download()의 히스토리 배열은 직전 미국 세션 종가 반영이 지연되어
+    (아침 KST 실행 시 기준일이 하루 이상 밀림), 대신 원본 v8 API를 직접 호출하고
+    미국 상장 종목은 meta.regularMarketPrice(장 마감 직후 갱신되는 확정 종가)로
+    최신 종가를 보강한다. 아침 KST 실행 시 미국장은 이미 마감이므로 이 값은 확정치.
+    """
+    import urllib.request
+    import json
+    import datetime
 
     if not yf_tickers:
         return pd.DataFrame()
 
-    raw = yf.download(
-        yf_tickers,
-        period="5d",
-        interval="1d",
-        auto_adjust=True,
-        progress=False,
-        threads=True,
-    )
+    series: dict[str, pd.Series] = {}
+    for sym in yf_tickers:
+        try:
+            url = (f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}"
+                   f"?range=1mo&interval=1d")
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                j = json.loads(resp.read().decode("utf-8", "replace"))
 
-    # yfinance 버전에 따라 MultiIndex / 단일 레벨 처리
-    if isinstance(raw.columns, pd.MultiIndex):
-        closes = raw["Close"]
-    else:
-        closes = raw[["Close"]].rename(columns={"Close": yf_tickers[0]})
+            res  = j["chart"]["result"][0]
+            ts   = res.get("timestamp") or []
+            cl   = (res.get("indicators", {}).get("quote") or [{}])[0].get("close") or []
+            meta = res.get("meta", {})
 
-    # 단일 티커가 Series로 반환된 경우
-    if isinstance(closes, pd.Series):
-        closes = closes.to_frame(name=yf_tickers[0])
+            s: dict = {}
+            for t, c in zip(ts, cl):
+                if c is not None:
+                    d = pd.Timestamp(datetime.datetime.utcfromtimestamp(t).date())
+                    s[d] = float(c)
 
-    return closes
+            # 미국 상장 종목(접미사·환율기호 없음): 히스토리 배열이 아직 못 채운
+            # 최신 확정 종가를 meta.regularMarketPrice로 보강
+            if "." not in sym and "=" not in sym:
+                rmp = meta.get("regularMarketPrice")
+                rmt = meta.get("regularMarketTime")
+                if rmp is not None and rmt:
+                    d = pd.Timestamp(datetime.datetime.utcfromtimestamp(rmt).date())
+                    if not s or d >= max(s):
+                        s[d] = float(rmp)
+
+            if s:
+                series[sym] = pd.Series(s).sort_index()
+        except Exception as e:
+            print(f"  [perf] {sym} 종가 조회 실패: {e}")
+
+    if not series:
+        return pd.DataFrame()
+    return pd.DataFrame(series).sort_index()
 
 
 def _calc_returns(closes: pd.DataFrame) -> dict[str, tuple[float, object]]:
