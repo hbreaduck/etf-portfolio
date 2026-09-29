@@ -801,11 +801,12 @@ def run(port: pd.DataFrame, diff: dict, classified: pd.DataFrame,
         _bucket_cards(bucket_actual),
         _futures_exposure_bar(classified),
         _gics_vs_econ(gics_tech_w, econ_tech_w, econ_diff),
-        _portfolio_table(port),
-        _history_section(history),
         _diff_section(diff),
         _etf_radar_section(radar),
         _etf_holdings_section(classified, port),
+        # 스크롤이 긴 타깃 포트폴리오·변동 이력은 페이지 맨 아래로 배치
+        _portfolio_table(port),
+        _history_section(history),
         _footer(),
     ]
 
